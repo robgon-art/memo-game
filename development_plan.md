@@ -10,11 +10,11 @@
 ## Phase 2: Core Game Logic
 - [x] Implement ECS components (Card, Board, GameState)
 - [x] Add unit tests using Vitest with colocated files, avoiding mocks
-- [ ] Use Functional Programming techniques
-- [ ] Design card matching and flip mechanics
-- [ ] Create game state management (moves counter, timer)
-- [ ] Develop scoring system
-- [ ] Implement randomization for card placement
+- [x] Use Functional Programming techniques
+- [x] Design card matching and flip mechanics
+- [x] Create game state management (moves counter, timer)
+- [x] Develop scoring system
+- [x] Implement randomization for card placement
 
 ## Phase 3: UI and Game Interface
 - [ ] Design responsive game board layout
@@ -73,47 +73,39 @@ memo-game/
 │   │   └── ui/                   # UI elements and card backs
 │   └── fonts/                    # Typography assets
 ├── src/
-│   ├── components/               # ECS components (implemented)
-│   │   ├── card.ts               # Card component (implemented)
-│   │   ├── card.test.ts          # Tests for card component (implemented)
+│   ├── components/               # ECS components
+│   │   ├── card.ts               # Card component
+│   │   ├── card.test.ts          # Tests for card component
 │   │   ├── board.ts              # Game board component
 │   │   ├── board.test.ts         # Tests for board component
 │   │   ├── game-state.ts         # Game state component
 │   │   └── game-state.test.ts    # Tests for game state component
 │   ├── systems/                  # ECS systems
-│   │   ├── render-system.ts      # WebGL rendering system (implemented)
+│   │   ├── render-system.ts      # WebGL rendering system
 │   │   ├── render-system.test.ts # Tests for render system
-│   │   ├── input-system.ts       # User interaction handling
-│   │   ├── input-system.test.ts  # Tests for input system
 │   │   ├── game-logic-system.ts  # Core game mechanics
-│   │   ├── game-logic-system.test.ts # Tests for game logic
-│   │   ├── animation-system.ts   # Animation handling
-│   │   └── animation-system.test.ts # Tests for animation system
-│   ├── services/
-│   │   ├── asset-loader.ts       # Image loading functionality
-│   │   ├── asset-loader.test.ts  # Tests for asset loader
-│   │   ├── timer-service.ts      # Game timer implementation
-│   │   └── timer-service.test.ts # Tests for timer service
-│   ├── utils/
+│   │   └── game-logic-system.test.ts # Tests for game logic
+│   ├── utils/                    # Utility functions
+│   │   ├── board-initializer.ts  # Board initialization logic
+│   │   ├── board-initializer.test.ts # Tests for board initializer
 │   │   ├── random.ts             # Card shuffling logic
 │   │   ├── random.test.ts        # Tests for randomization
-│   │   ├── webgl-utils.ts        # WebGL helper functions (implemented)
-│   │   └── webgl-utils.test.ts   # Tests for WebGL utilities (implemented)
-│   ├── constants/                # Constants (implemented)
-│   │   ├── artwork-data.ts       # Painting metadata
-│   │   ├── game-config.ts        # Game configuration constants
-│   │   └── shader-sources.ts     # WebGL shader code (implemented)
-│   │   └── shader-sources.test.ts # Tests for WebGL shader code (implemented)
-│   ├── styles/                   # CSS styles
+│   │   ├── webgl-utils.ts        # WebGL helper functions
+│   │   └── webgl-utils.test.ts   # Tests for WebGL utilities
+│   ├── constants/                # Constants
+│   │   ├── shader-sources.ts     # WebGL shader code
+│   │   └── shader-sources.test.ts # Tests for WebGL shader code
 │   ├── main.ts                   # Application entry point
-│   ├── main.test.ts              # Tests for application entry (implemented)
-│   ├── world.ts                  # ECS world initialization (implemented)
+│   ├── main.test.ts              # Tests for application entry
+│   ├── world.ts                  # ECS world initialization
 │   ├── world.test.ts             # Tests for ECS world
-│   └── index.html                # Main HTML file
+│   ├── vite-env.d.ts             # Vite type declarations
+│   ├── style.css                 # Main CSS styles
+│   └── typescript.svg            # TypeScript logo
 ├── .gitignore
 ├── package.json
-├── tsconfig.json                 # TypeScript configuration (updated)
+├── tsconfig.json                 # TypeScript configuration
 ├── vite.config.ts
 ├── vitest.config.ts              # Test configuration
 ├── README.md
-└── development_plan.md           # This file (updated) 
+└── development_plan.md           # This file 
