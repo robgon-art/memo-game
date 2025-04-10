@@ -51,7 +51,7 @@
 - [ ] Finalize README with detailed instructions
 - [ ] Create deployment pipeline
 - [ ] Prepare for release on GitHub Pages or similar platform
-- [ ] Add analytics for tracking game usage 
+- [ ] Add analytics for tracking game usage
 
 ## WebGL Rendering Pipeline Implementation
 - [x] WebGL Context Management
