@@ -95,6 +95,8 @@ memo-game/
 │   ├── styles/                   # CSS styles
 │   ├── main.ts                   # Application entry point
 │   ├── main.test.ts              # Tests for application entry
+│   ├── world.ts                  # ECS world initialization and configuration
+│   ├── world.test.ts             # Tests for ECS world
 │   └── index.html                # Main HTML file
 ├── .gitignore
 ├── package.json

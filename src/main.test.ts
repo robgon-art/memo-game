@@ -6,7 +6,7 @@ import * as worldModule from './world';
 // Import the World type from Becsy for proper typing
 import { World } from '@lastolivegames/becsy';
 
-describe('Game initialization', () => {
+describe('Game initialization', () => { 
   let originalDocument: Document;
   let originalWindow: Window;
   let originalRAF: typeof requestAnimationFrame;
@@ -223,7 +223,7 @@ describe('Game loop functionality', () => {
     global.document = dom.window.document;
     global.window = dom.window as unknown as Window & typeof globalThis;
 
-    // Track RAF calls without mocking world
+    // Track RAF calls
     rafCallCount = 0;
     global.requestAnimationFrame = function (callback) {
       rafCallCount++;
@@ -272,7 +272,7 @@ describe('Browser detection and auto-initialization', () => {
     function testAutoInit(hasWindow: boolean, isTest: boolean): boolean {
       let called = false;
 
-      // Mock the needed environment
+      // Set up the needed environment
       const testWindow = hasWindow ? {} : undefined;
       const testEnv = { TEST: isTest };
 
