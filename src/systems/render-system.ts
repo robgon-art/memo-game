@@ -111,13 +111,22 @@ export class RenderSystem extends System {
             return;
         }
 
-        // Get or create canvas (immutable approach)
-        this.canvas = options.canvas ?? 
-            document.querySelector('#game-board-canvas') as HTMLCanvasElement ?? 
-            this.createCanvas();
+        // Find the existing canvas - already created in main.ts
+        this.canvas = document.querySelector('#game-board-canvas') as HTMLCanvasElement;
+
+        // If canvas doesn't exist for some reason, create it (fallback)
+        if (!this.canvas) {
+            console.warn('Canvas not found, creating a new one');
+            this.canvas = this.createCanvas();
+        }
 
         // Initialize WebGL context
-        this.gl = options.gl || createWebGLContext(this.canvas);
+        try {
+            this.gl = options.gl || createWebGLContext(this.canvas);
+        } catch (error) {
+            console.error('Failed to create WebGL context:', error);
+            return;
+        }
 
         // Initialize WebGL resources (functional composition)
         const { program, locations, buffer } = this.initializeWebGLResources(this.gl);
@@ -136,6 +145,8 @@ export class RenderSystem extends System {
         // Enable alpha blending
         this.gl.enable(this.gl.BLEND);
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+
+        console.log('WebGL renderer initialized successfully');
     }
 
     // Pure function to create a new canvas
@@ -152,7 +163,7 @@ export class RenderSystem extends System {
         } else {
             document.body.appendChild(canvas);
         }
-        
+
         return canvas;
     }
 
@@ -208,7 +219,17 @@ export class RenderSystem extends System {
     // System execution (per frame) using functional patterns
     execute(): void {
         // Guard clause - skip execution if not initialized
-        if (!this.gl) return;
+        if (!this.gl) {
+            console.warn('Skipping render system execution - WebGL context not initialized');
+            return;
+        }
+
+        // Debug the number of cards
+        if (this.queries.cards && this.queries.cards.results) {
+            console.log(`Rendering ${this.queries.cards.results.length} cards`);
+        } else {
+            console.warn('No cards found in query results');
+        }
 
         // Setup rendering context
         this.setupRenderingContext();
@@ -219,12 +240,16 @@ export class RenderSystem extends System {
             return renderable.isVisible !== false;
         });
 
+        if (visibleCards.length === 0) {
+            console.warn('No visible cards to render');
+        }
+
         // Transform cards into render configs
         const renderConfigs = visibleCards.map(entity => {
             const card = entity as unknown as CardComponent;
             const renderable = entity as unknown as RenderableComponentInterface;
             const cardRender = entity as unknown as CardRenderComponentInterface;
-            
+
             // Calculate card matrix using pure static method
             const matrix = RenderSystem.createCardMatrix(
                 card.x,
@@ -235,7 +260,7 @@ export class RenderSystem extends System {
                 this.canvas.width,
                 this.canvas.height
             );
-            
+
             return { card, renderable, cardRender, matrix };
         });
 
@@ -289,7 +314,7 @@ export class RenderSystem extends System {
     // Render an individual card using its config
     private renderCard(config: RenderConfig): void {
         const { card, cardRender, matrix } = config;
-        
+
         // Set matrix uniform
         this.gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
 
@@ -311,7 +336,7 @@ export class RenderSystem extends System {
         if (card.isFlipped) {
             // Try to use cached front texture
             const frontTexture = this.cardFrontTextures.get(card.value);
-            
+
             if (frontTexture) {
                 this.gl.bindTexture(this.gl.TEXTURE_2D, frontTexture);
             } else if (card.texture && cardRender.isTextureLoaded) {
@@ -332,10 +357,10 @@ export class RenderSystem extends System {
     // Static, pure matrix transformation methods
     // Helper method to create transformation matrix for card positioning
     static createCardMatrix(
-        x: number, 
-        y: number, 
-        width: number, 
-        height: number, 
+        x: number,
+        y: number,
+        width: number,
+        height: number,
         rotation: number,
         canvasWidth: number = 800,
         canvasHeight: number = 600
@@ -367,7 +392,7 @@ export class RenderSystem extends System {
                 // Calculate dot product of row i from a and column j from b
                 const sum = Array.from({ length: 4 }, (_, k) => a[i + k * 4] * b[k + j * 4])
                     .reduce((acc, val) => acc + val, 0);
-                    
+
                 result[i + j * 4] = sum;
             }
         }

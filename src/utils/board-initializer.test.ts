@@ -12,6 +12,7 @@ vi.mock('@lastolivegames/becsy', () => {
             float64: vi.fn(),
             object: vi.fn()
         },
+        system: function (target: any) { return target; },
         Entity: class MockEntity { }
     };
 });

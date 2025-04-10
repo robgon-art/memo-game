@@ -3,6 +3,7 @@ import { Board } from '../components/board';
 import { Card } from '../components/card';
 import { GameState, initializeGame } from '../components/game-state';
 import { generateCardValuesForBoard } from './random';
+import { RenderableComponent, CardRenderComponent } from '../systems/render-system';
 
 /**
  * Initialize the game board with randomized card values
@@ -51,8 +52,10 @@ function createCardEntities(
         const x = col * (board.cardWidth + board.gap) + board.cardWidth / 2;
         const y = row * (board.cardHeight + board.gap) + board.cardHeight / 2;
 
-        // Create card entity
-        world.createEntity(Card, {
+        // Create card entity with rendering components
+        world.createEntity(
+            // Card component for game logic
+            Card, {
             id: i,
             value: cardValues[i],
             x,
@@ -62,6 +65,16 @@ function createCardEntities(
             isFlipped: false,
             isMatched: false,
             flipProgress: 0
-        });
+        },
+            // Renderable component for visibility
+            RenderableComponent, {
+            isVisible: true
+        },
+            // Card render component for textures
+            CardRenderComponent, {
+            isTextureLoaded: false,
+            textureUrl: `images/numbers/${cardValues[i]}.png`
+        }
+        );
     }
 } 

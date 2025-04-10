@@ -18,6 +18,19 @@ export function initializeUI() {
         <div id="game-board" class="game-board"></div>
       </div>
     `
+
+    // Create and append canvas to game board
+    const gameBoard = document.querySelector<HTMLDivElement>('#game-board')
+    if (gameBoard) {
+      const canvas = document.createElement('canvas')
+      canvas.id = 'game-board-canvas'
+      canvas.width = 800
+      canvas.height = 600
+      canvas.style.display = 'block'
+      canvas.style.margin = '0 auto'
+      canvas.style.backgroundColor = '#1a1a1a'
+      gameBoard.appendChild(canvas)
+    }
   }
   return app !== null;
 }
@@ -26,15 +39,15 @@ export function initializeUI() {
 export async function main() {
   // Set up UI first
   initializeUI();
-  
+
   try {
     const world = await initWorld();
-    
+
     function gameLoop() {
       world.execute();
       requestAnimationFrame(gameLoop);
     }
-    
+
     requestAnimationFrame(gameLoop);
   } catch (error) {
     console.error('Failed to initialize game:', error);
