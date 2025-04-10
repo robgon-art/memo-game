@@ -1,24 +1,53 @@
 import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+import { initWorld } from './world'
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+// Export this function for testing
+export function initializeUI() {
+  const app = document.querySelector<HTMLDivElement>('#app')
+  // Only initialize UI if app element exists
+  if (app) {
+    app.innerHTML = `
+      <div class="game-container">
+        <div class="game-header">
+          <h1>Memo Game: Masters of Impressionism</h1>
+          <div class="game-stats">
+            <div class="moves">Moves: <span id="moves-count">0</span></div>
+            <div class="timer">Time: <span id="timer">00:00</span></div>
+          </div>
+        </div>
+        <div id="game-board" class="game-board"></div>
+      </div>
+    `
+  }
+  return app !== null;
+}
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+// Game initialization stays separate
+export async function main() {
+  // Set up UI first
+  initializeUI();
+  
+  try {
+    const world = await initWorld();
+    
+    function gameLoop() {
+      world.execute();
+      requestAnimationFrame(gameLoop);
+    }
+    
+    requestAnimationFrame(gameLoop);
+  } catch (error) {
+    console.error('Failed to initialize game:', error);
+  }
+}
+
+// Only run in browser context, not during tests
+// Check for typical test environment indicators
+const isTestEnvironment = 
+  typeof process !== 'undefined' && 
+  process.env.NODE_ENV === 'test' || 
+  process.env.VITEST;
+
+if (!isTestEnvironment) {
+  main();
+}
