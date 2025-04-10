@@ -17,7 +17,7 @@
 - [x] Implement randomization for card placement
 
 ## Phase 3: UI and Game Interface
-- [ ] Design responsive game board layout
+- [ ] Design and show the game board
 - [x] Create card visual components (front/back system)
 - [ ] Use numbers to start with
 - [ ] Implement user interaction (click/touch handlers)

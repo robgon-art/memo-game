@@ -3,6 +3,25 @@ import { JSDOM } from 'jsdom';
 import { initializeUI, main } from './main';
 import * as worldModule from './world';
 
+// Mock Becsy properly before any imports that depend on it
+vi.mock('@lastolivegames/becsy', () => {
+  return {
+    World: class MockWorld { },
+    Entity: class MockEntity { },
+    System: class MockSystem { },
+    component: function (target: any) { return target; },
+    system: function (target: any) { return target; },
+    field: {
+      int32: vi.fn(),
+      float64: vi.fn(),
+      boolean: vi.fn(),
+      object: vi.fn(),
+      string: vi.fn(),
+      arrayOf: vi.fn()
+    }
+  };
+});
+
 // Import the World type from Becsy for proper typing
 import { World } from '@lastolivegames/becsy';
 
