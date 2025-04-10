@@ -6,7 +6,7 @@ import * as worldModule from './world';
 // Import the World type from Becsy for proper typing
 import { World } from '@lastolivegames/becsy';
 
-describe('Game initialization', () => { 
+describe('Game initialization', () => {
   let originalDocument: Document;
   let originalWindow: Window;
   let originalRAF: typeof requestAnimationFrame;
@@ -239,14 +239,23 @@ describe('Game loop functionality', () => {
   });
 
   it('should execute the game loop for multiple frames', async () => {
-    // This test will use the actual world creation without mocks
-    await main();
+    // Suppress console errors during this test
+    const originalConsoleError = console.error;
+    console.error = vi.fn();
 
-    // Wait for a few animation frames to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
+    try {
+      // This test will use the actual world creation without mocks
+      await main();
 
-    // Verify that requestAnimationFrame was called multiple times
-    expect(rafCallCount).toBeGreaterThan(1);
+      // Wait for a few animation frames to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Verify that requestAnimationFrame was called multiple times
+      expect(rafCallCount).toBeGreaterThan(1);
+    } finally {
+      // Restore console.error even if the test fails
+      console.error = originalConsoleError;
+    }
   });
 });
 
