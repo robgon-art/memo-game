@@ -12,6 +12,7 @@ import {
     CARD_FRAGMENT_SHADER,
     QUAD_VERTICES
 } from '../constants/shader-sources';
+import { assetLoader } from '../utils/asset-loader';
 
 // Card Component (forward reference) - will be defined in components/card.ts
 export interface CardComponent {
@@ -193,17 +194,38 @@ export class RenderSystem extends System {
     // Promise-based texture loading (pure function)
     private async loadCardBackTexture(gl: WebGLRenderingContext): Promise<WebGLTexture> {
         return new Promise((resolve) => {
-            const cardBackImg = new Image();
-            cardBackImg.src = 'images/ui/card-back.png';
+            try {
+                // Use the asset loader to get the card back
+                const cardBackImage = assetLoader.getCardBackImage();
 
-            cardBackImg.onload = () => {
-                resolve(createTexture(gl, cardBackImg));
-            };
+                if (cardBackImage) {
+                    // If already loaded, create texture from it
+                    resolve(createTexture(gl, cardBackImage));
+                    return;
+                }
 
-            cardBackImg.onerror = () => {
-                console.error('Failed to load card back texture');
-                // Create a fallback texture (blue color)
-                const fallbackData = new Uint8Array([0, 0, 255, 255]);
+                // If not yet loaded, load it now
+                assetLoader.loadCardBack()
+                    .then(image => {
+                        resolve(createTexture(gl, image));
+                    })
+                    .catch(error => {
+                        console.error('Failed to load card back texture:', error);
+                        // Create a fallback texture (blue color)
+                        const fallbackData = new Uint8Array([0, 0, 255, 255]);
+                        const texture = gl.createTexture()!;
+                        gl.bindTexture(gl.TEXTURE_2D, texture);
+                        gl.texImage2D(
+                            gl.TEXTURE_2D, 0, gl.RGBA,
+                            1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+                            fallbackData
+                        );
+                        resolve(texture);
+                    });
+            } catch (error) {
+                console.error('Error in loadCardBackTexture:', error);
+                // Create a fallback texture (red color for error)
+                const fallbackData = new Uint8Array([255, 0, 0, 255]);
                 const texture = gl.createTexture()!;
                 gl.bindTexture(gl.TEXTURE_2D, texture);
                 gl.texImage2D(
@@ -212,7 +234,7 @@ export class RenderSystem extends System {
                     fallbackData
                 );
                 resolve(texture);
-            };
+            }
         });
     }
 

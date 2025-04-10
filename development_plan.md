@@ -26,9 +26,9 @@
 - [x] Implement basic animations (card flip, match/mismatch feedback)
 
 ## Phase 4: Assets & Art Integration
-- [ ] Acquire and process artwork images for all 12 painting pairs
-- [ ] Implement asset loading and management system
-- [ ] Create card back design
+- [x] Acquire and process artwork images for all 12 painting pairs
+- [x] Acquire a card back design
+- [x] Implement asset loading
 - [ ] Optimize image assets for web performance
 - [ ] Add visual feedback for successful matches
 
@@ -68,7 +68,7 @@ memo-game/
 ├── .github/                      # CI/CD workflows
 ├── public/                       # Static assets
 │   ├── images/
-│   │   ├── artworks/             # 12 Impressionist paintings
+│   │   ├── cards/             # 12 Impressionist paintings
 │   │   └── ui/                   # UI elements and card backs
 │   └── fonts/                    # Typography assets
 ├── src/
