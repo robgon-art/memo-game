@@ -11,6 +11,7 @@ import {
     getPhaseFromValue
 } from '../components/game-state';
 import { Board, getCardIndexAtPosition } from '../components/board';
+import { initializeBoardWithRandomCards } from '../utils/board-initializer';
 
 /**
  * Input event from user interaction
@@ -256,19 +257,12 @@ export function handleUnmatchedCards(
  */
 @system
 export class GameLogicSystem extends System {
-    // Define queries
+    // Define queries - these will be populated by Becsy
     static queries = {
-        board: { with: Board, write: true },
-        gameState: { with: GameState, write: true },
-        cards: { with: Card, write: true }
+        board: { with: Board },
+        gameState: { with: GameState },
+        cards: { with: Card }
     };
-
-    // Query results storage
-    private queries: {
-        board: { results: EntityWithID[] },
-        gameState: { results: EntityWithID[] },
-        cards: { results: EntityWithID[] }
-    } = {} as any;
 
     // Event queue
     private inputEvents: InputEvent[] = [];
@@ -282,16 +276,37 @@ export class GameLogicSystem extends System {
     }
 
     /**
+     * Get access to query results - handles both production and test environments
+     * @returns Object with query results
+     */
+    private getQueryResults() {
+        // In test environment, queries might be structured differently
+        const queries = (this as any).queries;
+
+        if (!queries) {
+            return { board: [], gameState: [], cards: [] };
+        }
+
+        // Handle both production (.current) and test (.results) query formats
+        return {
+            board: queries.board?.current || queries.board?.results || [],
+            gameState: queries.gameState?.current || queries.gameState?.results || [],
+            cards: queries.cards?.current || queries.cards?.results || []
+        };
+    }
+
+    /**
      * System execution
      */
     execute(): void {
         // Get current time
         const currentTime = performance.now();
 
-        // Get entities
-        const gameStateEntity = this.queries.gameState.results[0];
-        if (!gameStateEntity) return;
+        // Get entities using our helper method
+        const { gameState: gameStateEntities } = this.getQueryResults();
+        if (gameStateEntities.length === 0) return;
 
+        const gameStateEntity = gameStateEntities[0];
         const gameState = gameStateEntity.read(GameState);
 
         // Update game timer
@@ -308,6 +323,18 @@ export class GameLogicSystem extends System {
 
         // Clear processed events
         this.inputEvents = [];
+
+        // Process game state entities for initialization
+        for (const entity of gameStateEntities) {
+            const state = entity.read(GameState);
+            // Handle different game phases
+            switch (state.phase) {
+                case GamePhaseValue[GamePhase.INITIALIZING]:
+                    this.initializeGame(state);
+                    break;
+                // Other game phases will be handled here
+            }
+        }
     }
 
     /**
@@ -320,11 +347,11 @@ export class GameLogicSystem extends System {
         }
 
         // Get the board and card entities
-        const boardEntity = this.queries.board.results[0];
-        if (!boardEntity) return;
+        const { board: boardEntities, cards: cardEntities } = this.getQueryResults();
+        if (boardEntities.length === 0) return;
 
+        const boardEntity = boardEntities[0];
         const board = boardEntity.read(Board);
-        const cardEntities = this.queries.cards.results;
 
         // Process each input event in order
         for (const event of this.inputEvents) {
@@ -332,16 +359,13 @@ export class GameLogicSystem extends System {
                 event,
                 gameState,
                 board,
-                cardEntities
+                cardEntities as unknown as EntityWithID[]
             );
 
             // Apply state updates if any
             if (stateUpdates) {
-                const gameStateEntity = this.queries.gameState.results[0];
-                if (gameStateEntity) {
-                    // Update our local reference to game state
-                    Object.assign(gameState, stateUpdates);
-                }
+                // Update our local reference to game state
+                Object.assign(gameState, stateUpdates);
             }
 
             // Apply card updates if any
@@ -357,13 +381,12 @@ export class GameLogicSystem extends System {
      * Evaluate card matches and game state
      */
     private evaluateGameState(gameState: GameState, currentTime: number): void {
-        const cardEntities = this.queries.cards.results;
-        const gameStateEntity = this.queries.gameState.results[0];
-        if (!gameStateEntity) return;
+        // Get card entities
+        const { cards: cardEntities } = this.getQueryResults();
 
         // First check for matches with currently selected cards
         const { stateUpdates: matchUpdates, cardUpdates: matchCardUpdates } =
-            evaluateCardMatches(gameState, cardEntities);
+            evaluateCardMatches(gameState, cardEntities as unknown as EntityWithID[]);
 
         // Apply match updates if any
         if (matchUpdates) {
@@ -380,7 +403,7 @@ export class GameLogicSystem extends System {
         // If game is still playing, check for unmatched cards to flip back
         if (gameState.phase === GamePhaseValue[GamePhase.PLAYING]) {
             const { stateUpdates: unmatchedUpdates, cardUpdates: unmatchedCardUpdates } =
-                handleUnmatchedCards(gameState, cardEntities, currentTime);
+                handleUnmatchedCards(gameState, cardEntities as unknown as EntityWithID[], currentTime);
 
             // Apply unmatched card updates if any
             if (unmatchedUpdates) {
@@ -400,10 +423,10 @@ export class GameLogicSystem extends System {
      * For testing: get the current game phase
      */
     getCurrentPhase(): GamePhase {
-        const gameStateEntity = this.queries.gameState.results[0];
-        if (!gameStateEntity) return GamePhase.INITIALIZING;
+        const { gameState: gameStateEntities } = this.getQueryResults();
+        if (gameStateEntities.length === 0) return GamePhase.INITIALIZING;
 
-        const gameState = gameStateEntity.read(GameState);
+        const gameState = gameStateEntities[0].read(GameState);
         return getPhaseFromValue(gameState.phase);
     }
 
@@ -411,16 +434,39 @@ export class GameLogicSystem extends System {
      * For testing: get current game state
      */
     getGameState(): GameState | null {
-        const gameStateEntity = this.queries.gameState.results[0];
-        if (!gameStateEntity) return null;
+        const { gameState: gameStateEntities } = this.getQueryResults();
+        if (gameStateEntities.length === 0) return null;
 
-        return gameStateEntity.read(GameState);
+        return gameStateEntities[0].read(GameState);
     }
 
     /**
      * For testing: get card entities
      */
     getCardEntities(): EntityWithID[] {
-        return this.queries.cards.results;
+        const { cards: cardEntities } = this.getQueryResults();
+        return cardEntities as unknown as EntityWithID[];
+    }
+
+    /**
+     * Initialize the game with randomized card values
+     * @param state - The current game state
+     */
+    private initializeGame(_state: GameState): void {
+        // Get board and game state entities
+        const { board: boardEntities, gameState: gameStateEntities } = this.getQueryResults();
+
+        if (boardEntities.length > 0 && gameStateEntities.length > 0) {
+            try {
+                // Use our board initializer utility
+                initializeBoardWithRandomCards(
+                    this as unknown as any, // Pass system as world-like object
+                    boardEntities[0],
+                    gameStateEntities[0]
+                );
+            } catch (error) {
+                console.error("Error initializing board:", error);
+            }
+        }
     }
 } 
