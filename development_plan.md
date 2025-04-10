@@ -10,6 +10,7 @@
 ## Phase 2: Core Game Logic
 - [x] Implement ECS components (Card, Board, GameState)
 - [x] Add unit tests using Vitest with colocated files, avoiding mocks
+- [ ] Use Functional Programming techniques
 - [ ] Design card matching and flip mechanics
 - [ ] Create game state management (moves counter, timer)
 - [ ] Develop scoring system
