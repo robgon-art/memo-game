@@ -41,13 +41,11 @@ export async function main() {
   }
 }
 
-// Only run in browser context, not during tests
-// Check for typical test environment indicators
-const isTestEnvironment = 
-  typeof process !== 'undefined' && 
-  process.env.NODE_ENV === 'test' || 
-  process.env.VITEST;
-
-if (!isTestEnvironment) {
-  main();
+// Simpler browser detection - if we have a window object, we're in a browser
+if (typeof window !== 'undefined') {
+  // In Vitest, the tests will import the module but not run in a real browser
+  // In a real browser, we want to execute main
+  if (!import.meta.env.TEST) {
+    main();
+  }
 }
