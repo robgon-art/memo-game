@@ -55,7 +55,7 @@
 
 ## WebGL Rendering Pipeline Implementation
 - [x] WebGL Context Management
-- [x] Shader Compilation and Program Linking
+- [x] Shader Compilation and Program Linking 
 - [x] Texture and Buffer Creation
 - [x] Matrix Transformations for 2D Rendering
 - [x] Card Rendering System
